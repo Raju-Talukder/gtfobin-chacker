@@ -1,0 +1,30 @@
+#!/bin/bash
+
+check_gtfobins() {
+    command=$1
+    url="https://gtfobins.github.io/gtfobins/$command/"
+
+    # Use curl to check if the URL exists
+    if curl --output /dev/null --silent --head --fail "$url"; then
+        entry=$(curl -s "$url" | grep -oP '<h2.*?>(.+?)<\/h2>' | sed 's/<[^>]*>//g' | tr '\n' ' ')
+        echo "$command ==> $entry"
+        echo "$url"
+        echo "-----------------------------------"
+    fi
+}
+
+
+# Check if a file name is provided
+if [ $# -eq 1 ] && [ -f "$1" ]; then
+    # Read paths from the file
+    paths=($(<"$1"))
+
+    # Extract the last field from each path and check GTFOBins
+    for path in "${paths[@]}"; do
+        result=$(echo "$path" | awk -F/ '{print $NF}')
+        check_gtfobins "$result"
+    done
+else
+    echo "Usage: $0 filename"
+    exit 1
+fi
